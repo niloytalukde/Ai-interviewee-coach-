@@ -1,9 +1,7 @@
 import { Response, Router, Request, NextFunction } from "express";
 import passport from "passport";
 import { authController } from "./auth.contoraller";
-
 const authRouter = Router();
-
 authRouter.post("/register", authController.registerUser);
 authRouter.get(
   "/google",
@@ -13,7 +11,8 @@ authRouter.get(
 );
 authRouter.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/sign-in" }),
+  passport.authenticate("google", { failureRedirect: "/sign-in",session: true }),
   authController.googleCallback
 );
+authRouter.post("/logout",authController.logout)
 export default authRouter;
