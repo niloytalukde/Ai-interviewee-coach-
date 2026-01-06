@@ -1,7 +1,7 @@
 
 import { Response } from "express";
 
-interface TokenInfo {
+export interface TokenInfo {
   accessToken: string;
   refreshToken: string;
 }

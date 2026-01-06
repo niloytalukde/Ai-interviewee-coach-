@@ -1,15 +1,20 @@
 import bcrypt from "bcryptjs";
 import AppError from "../../middleware/AppError";
-import logger from "../../utils/logger";
 import User from "../User/user.model";
+import { createUserToken } from "../../utils/createUserToken";
+import { Response } from "express";
 
-interface IPayload {
+interface IRegisterPayload {
   name: string;
   email: string;
   password: string;
 }
 
-const registerUser = async (payload: IPayload) => {
+interface ILoginPayload{
+  email: string;
+  password: string;
+}
+const registerUser = async (payload: IRegisterPayload ) => {
   const { name, email, password } = payload;
 
   const isUserExist = await User.findOne({ email });
@@ -33,7 +38,64 @@ const registerUser = async (payload: IPayload) => {
   return safeUser;
 };
 
+ const login = async (loginInfo: ILoginPayload) => {
+  const { email, password } = loginInfo
+  const user = await User.findOne({ email })
+  if (!user || !user.password) {
+  throw new AppError(404, "User not found");
+}
 
-const login = async () => {};
 
-export const authServices = { registerUser, login };
+  //  password match check
+  const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+  if (!isPasswordMatch) {
+    throw new AppError(404, "Invalid credentials");
+  }
+
+  //  create  token
+ const payload ={
+      _id: user._id,
+      email: user.email,
+      role: user.role,
+ }
+   
+  const tokenInfo = createUserToken(payload)
+  return {
+    tokenInfo,
+    user:{
+       _id: user._id,
+      email: user.email,
+      role: user.role,
+    }
+   
+  };
+};
+
+const logout = async(res:Response)=>{
+
+// Passport logout
+      // Clear refresh and accessToken token cookie
+       res.clearCookie("accessToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+      });
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+      });
+     
+    
+
+
+
+
+}
+
+
+
+
+
+export const authServices = { registerUser, login,logout };

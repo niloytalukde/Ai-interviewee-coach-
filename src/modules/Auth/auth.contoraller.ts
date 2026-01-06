@@ -33,28 +33,33 @@ res.redirect(process.env.FRONTEND_URL!);
 
  const logout = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    // Passport logout
-    req.logout((err) => {
-      if (err) return next(err);
-      // Clear refresh and accessToken token cookie
-       res.clearCookie("accessToken", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-      });
-      res.clearCookie("refreshToken", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-      });
-      sendResponse(res, {
+     
+
+    await authServices.logout(res)
+
+ sendResponse(res, {
         success: true,
         statusCode: 200,
         message: "User logged out successfully",
         data: null,
       });
-    });
+
   }
 );
 
-export const authController={registerUser,googleCallback,logout}
+const login =catchAsync(async(req:Request,res:Response,next:NextFunction)=>{
+const userInfo= await authServices.login(req.body)
+const {tokenInfo,user}=userInfo
+setAuthCookie(res,tokenInfo)
+sendResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: "User logged In successfully",
+        data: user,
+      });
+
+})
+
+
+
+export const authController={registerUser,googleCallback,logout,login}
