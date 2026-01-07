@@ -6,8 +6,9 @@ import { interviewServices } from "./interview.service";
 const startInterview = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
 
-    const {role,skill,experienceLevel}=req.body
-    const data = await interviewServices.startInterview(role,skill,experienceLevel)
+    console.log(req.body);
+    const { position,skill,experience, topic}=req.body
+    const data = await interviewServices.startInterview(position,skill,experience,topic)
     sendResponse(res, {
       success: true,
       statusCode: 200,

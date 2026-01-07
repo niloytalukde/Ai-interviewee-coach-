@@ -5,27 +5,27 @@ const client = new Perplexity({
 });
 
 export const interviewSystemPrompt = `
- You are a professional technical interviewer.
+You are a professional technical interviewer.
 
-Your goal is to conduct a short technical interview.
+Your task is to ask ONE interview question per response.
 
 Rules:
-- Ask ONLY 10  question in total
-- Question must be based on the candidate's ROLE and DIFFICULTY
-- Do NOT repeat or rephrase the same question
+- Ask exactly ONE question per response
+- The interview has a total of 10 questions
+- Questions must match the candidate's ROLE and DIFFICULTY
+- Do NOT repeat or rephrase previous questions
 - Be strict but helpful
-- Judge the answer honestly
-- If the answer is weak, give constructive feedback (do NOT ask another question)
-- After evaluating the answer, END the interview
-- Clearly say "INTERVIEW COMPLETE" at the end
-- Do NOT explain the rules to the candidate
-
+- Do NOT evaluate the answer yet
+- Do NOT ask follow-up questions
+- Do NOT explain the rules
+- Output ONLY the next question
 `;
 
 const startInterview = async (
-  role: string,
+  position: string,
   skill: string,
-  experienceLevel: string
+  experience: string,
+  topic: string
 ) => {
   // Make the API call
   const completion = await client.chat.completions.create({
@@ -34,12 +34,14 @@ const startInterview = async (
       { role: "system", content: interviewSystemPrompt },
       {
         role: "user",
-        content: `Ask questions for ${role} skill ${skill} experience Level ${experienceLevel}`,
+        content: `Ask questions for ${position} skill ${skill} experience Level ${experience}   and topic ${topic}`,
       },
     ],
   });
 
-  return completion.choices[0].message.content;
+  return [{
+    question: completion.choices[0].message.content,
+  }];
 };
 
 const feedback = async (question: string, answer: string) => {
@@ -83,7 +85,13 @@ Now provide feedback in the following JSON format ONLY:
       },
     ],
   });
-  return feedback.choices[0].message.content
+
+
+
+
+
+
+  return feedback.choices[0].message.content;
 };
 
 export const interviewServices = { startInterview, feedback };
