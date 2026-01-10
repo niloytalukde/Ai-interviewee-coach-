@@ -8,6 +8,7 @@ import passport from "passport"
 import expressSession from "express-session"
 import "./config/passport"
 import router from "./routes";
+import cookieParser from "cookie-parser"
 const app = express();
 
 app.use(express.json());
@@ -25,6 +26,7 @@ app.use(expressSession({
 }))
 app.use(passport.initialize())
 app.use(passport.session())
+app.use(cookieParser())
 
 // routes 
 

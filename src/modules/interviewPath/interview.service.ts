@@ -1,48 +1,127 @@
 import Perplexity from "@perplexity-ai/perplexity_ai";
-import { json } from "node:stream/consumers";
+import interviewModel from "./interview.model";
 
 const client = new Perplexity({
   apiKey: process.env.PERPLEXITY_API_KEY!,
 });
 
 export const interviewSystemPrompt = `
- You are a professional technical interviewer.
-Your goal is to conduct a short technical interview.
+You are an expert technical interviewer.
 
-Rules:
-- Ask ONLY 10  question in total
-- Question must be based on the candidate's ROLE and DIFFICULTY
-- Do NOT repeat or rephrase the same question
-- Be strict but helpful
-- Judge the answer honestly
-- If the answer is weak, give constructive feedback (do NOT ask another question)
-- After evaluating the answer, END the interview
-- Clearly say "INTERVIEW COMPLETE" at the end
-- Do NOT explain the rules to the candidate
-`; 
+Based on the following inputs, generate a well-structured list of high-quality interview questions.
 
-const startInterview = async (
-  position: string,
-  skill: string,
-  experience: string,
-  topic: string
-) => {
-  // Make the API call
+Job Title: {{jobTitle}}
+Job Description: {{jobDescription}}
+Interview Duration: {{timeDuration}}
+Interview Type: {{type}}
+
+Your task:
+- Analyze the job description to identify key responsibilities and required skills.
+- Generate interview questions based on the duration.
+- Match real-life {{type}} interview tone.
+
+IMPORTANT:
+- Return ONLY valid JSON
+- Do NOT include explanations, markdown, or extra text
+
+JSON format:
+{
+  "interviewQuestions": [
+    {
+      "question": "",
+      "type": "Technical | Behavioral | Experience | Problem Solving | Leadership"
+    }
+  ]
+}
+`;
+
+
+
+
+
+export type InterviewQuestion = {
+  question: string;
+  type: string;
+};
+
+
+const normalizeContentToText = (
+  content:
+    | string
+    | {
+        type: string;
+        text?: string;
+      }[]
+): string => {
+  if (typeof content === "string") return content;
+
+  if (Array.isArray(content)) {
+    return content
+      .map((chunk) => (chunk.type === "text" ? chunk.text ?? "" : ""))
+      .join("");
+  }
+
+  return "";
+};
+
+export const startInterview = async (
+  jobPosition: string,
+  jobDescription: string,
+  timeDuration: string,
+  types: string[],
+  userEmail: string
+): Promise<InterviewQuestion[]> => {
+  const finalPrompt = interviewSystemPrompt
+    .replace("{{jobTitle}}", jobPosition)
+    .replace("{{jobDescription}}", jobDescription)
+    .replace("{{timeDuration}}", timeDuration)
+    .replace("{{type}}", types.join(", "));
+
   const completion = await client.chat.completions.create({
     model: "sonar",
     messages: [
-      { role: "system", content: interviewSystemPrompt },
+      {
+        role: "system",
+        content: "You are an expert technical interviewer",
+      },
       {
         role: "user",
-        content: `Ask questions for ${position} skill ${skill} experience Level ${experience}   and topic ${topic}`,
+        content: finalPrompt,
       },
     ],
   });
 
-  return [{
-    question: completion.choices[0].message.content,
-  }];
+  const rawContent = completion.choices[0].message.content;
+  if (!rawContent) return [];
+
+  // Normalize content
+  const textContent = normalizeContentToText(rawContent);
+  if (!textContent) return [];
+
+  // Remove markdown if exists
+  const cleanJson = textContent
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
+
+  const parsed = JSON.parse(cleanJson);
+
+  const questions: InterviewQuestion[] =
+    parsed.interviewQuestions ?? [];
+
+  //  SAVE INTERVIEW SESSION
+  await interviewModel.create({
+    userEmail,
+    jobType: jobPosition,
+    description: jobDescription,
+    duration: timeDuration,
+    questions,
+  });
+
+  return questions;
 };
+
+
 
 const feedback = async (question: string, answer: string) => {
   const feedbackPrompt = `You are a professional technical interviewer and mentor.
@@ -86,9 +165,8 @@ Now provide feedback in the following JSON format ONLY:
     ],
   });
 
-  const feedbackData=JSON.stringify(feedback.choices[0].message.content)
-
-  return  feedbackData
+  return feedback.choices[0].message.content;
 };
 
-export const interviewServices = { startInterview, feedback };
+
+export const interviewServices = { startInterview, feedback, };

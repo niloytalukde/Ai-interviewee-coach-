@@ -14,5 +14,6 @@ authRouter.get(
   passport.authenticate("google", { failureRedirect: "/sign-in",session: true }),
   authController.googleCallback
 );
+authRouter.post("/login",authController.login)
 authRouter.post("/logout",authController.logout)
 export default authRouter;

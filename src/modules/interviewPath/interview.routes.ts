@@ -1,14 +1,18 @@
 import { Router } from "express";
 import { interviewController } from "./interviewe.controller";
+import { checkAuth } from "../../middleware/checkAuth";
 
+const interviewRoutes = Router();
 
+interviewRoutes.post(
+  "/start-interview",
+checkAuth("user"),
+  interviewController.startInterview
+);
 
+interviewRoutes.post(
+  "/feedback",
+  interviewController.feedback
+);
 
-const interviewRoutes=Router()
-
-interviewRoutes.post("/start-interview",interviewController.startInterview)
-interviewRoutes.post("/feedback",interviewController.feedback)
-
-
-
-export default interviewRoutes 
+export default interviewRoutes;

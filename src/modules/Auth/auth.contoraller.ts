@@ -9,6 +9,15 @@ import { setAuthCookie } from "../../utils/setAuthCookie";
 const registerUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = await authServices.registerUser(req.body);
+
+if(!user){
+  throw new AppError(404,"User Not found")
+}
+// create User Token here 
+const tokenInfo = createUserToken(user)
+// setToken on cookie Here 
+setAuthCookie(res,tokenInfo)
+
     sendResponse(res, {
       success: true,
       statusCode: 201,
@@ -34,7 +43,6 @@ res.redirect(process.env.FRONTEND_URL!);
  const logout = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
      
-
     await authServices.logout(res)
 
  sendResponse(res, {
