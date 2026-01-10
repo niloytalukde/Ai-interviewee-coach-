@@ -15,4 +15,9 @@ interviewRoutes.post(
   interviewController.feedback
 );
 
+interviewRoutes.get(
+  "/single-session",
+  interviewController.getSessionById
+);
+
 export default interviewRoutes;

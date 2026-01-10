@@ -82,7 +82,7 @@ export const startInterview = async (
     messages: [
       {
         role: "system",
-        content: "You are an expert technical interviewer",
+        content: "You are an expert technical interviewer. Your Name is jeri",
       },
       {
         role: "user",
@@ -109,8 +109,11 @@ export const startInterview = async (
   const questions: InterviewQuestion[] =
     parsed.interviewQuestions ?? [];
 
+    if (!questions.length) {
+  throw new Error("No interview questions generated");
+}
   //  SAVE INTERVIEW SESSION
-  await interviewModel.create({
+ const session =  await interviewModel.create({
     userEmail,
     jobType: jobPosition,
     description: jobDescription,
@@ -118,10 +121,8 @@ export const startInterview = async (
     questions,
   });
 
-  return questions;
+  return session;
 };
-
-
 
 const feedback = async (question: string, answer: string) => {
   const feedbackPrompt = `You are a professional technical interviewer and mentor.
@@ -168,5 +169,11 @@ Now provide feedback in the following JSON format ONLY:
   return feedback.choices[0].message.content;
 };
 
+const getSessionById = async (id:string)=>{
 
-export const interviewServices = { startInterview, feedback, };
+const singleSession= await interviewModel.findById({_id:id})
+
+return singleSession
+}
+
+export const interviewServices = { startInterview, feedback,getSessionById };

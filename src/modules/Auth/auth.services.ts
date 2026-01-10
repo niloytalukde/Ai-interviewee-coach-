@@ -40,7 +40,8 @@ const registerUser = async (payload: IRegisterPayload ) => {
 
  const login = async (loginInfo: ILoginPayload) => {
   const { email, password } = loginInfo
-  const user = await User.findOne({ email })
+  const user = await User.findOne({ email:email })
+
   if (!user || !user.password) {
   throw new AppError(404, "User not found");
 }

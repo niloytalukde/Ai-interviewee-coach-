@@ -15,7 +15,6 @@ const startInterview = catchAsync(
   
     const { jobPosition,jobDescription,timeDuration, types}=req.body
 
-    console.log(req.body);
     const data = await interviewServices.startInterview(jobPosition,jobDescription,timeDuration, types,userEmail)
     sendResponse(res, {
       success: true,
@@ -51,4 +50,16 @@ console.log(feedback);
 })
 
 
-export const interviewController = {startInterview, feedback}
+const getSessionById = catchAsync(async(req:Request,res:Response,next:NextFunction)=>{
+const {id}=req.body
+const singleSession= await interviewServices.getSessionById(id)
+ sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: " Single Session Retrive Successfully",
+      data: singleSession,
+    });
+
+})
+
+export const interviewController = {startInterview, feedback,getSessionById}

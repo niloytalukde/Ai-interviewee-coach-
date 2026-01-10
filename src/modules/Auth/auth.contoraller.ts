@@ -5,6 +5,7 @@ import sendResponse from "../../utils/sendResponse";
 import AppError from "../../middleware/AppError";
 import { createUserToken } from "../../utils/createUserToken";
 import { setAuthCookie } from "../../utils/setAuthCookie";
+import { child } from "winston";
 
 const registerUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -57,7 +58,11 @@ res.redirect(process.env.FRONTEND_URL!);
 
 const login =catchAsync(async(req:Request,res:Response,next:NextFunction)=>{
 const userInfo= await authServices.login(req.body)
+
+console.log(userInfo);
 const {tokenInfo,user}=userInfo
+
+
 setAuthCookie(res,tokenInfo)
 sendResponse(res, {
         success: true,
