@@ -16,7 +16,7 @@ interviewRoutes.post(
 );
 
 interviewRoutes.get(
-  "/single-session",
+  "/single-session/:id",
   interviewController.getSessionById
 );
 
