@@ -36,7 +36,8 @@ export const checkAuth = (...authRole: string[]) => async (
       throw new AppError(400, "You are Not Permitted");
     }
 
-    req.user = verifiedToken;
+    req.user = verifiedToken
+    console.log(req.user);
     
     next();
   } catch (error) {
