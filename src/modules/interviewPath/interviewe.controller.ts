@@ -51,7 +51,9 @@ console.log(feedback);
 
 
 const getSessionById = catchAsync(async(req:Request,res:Response,next:NextFunction)=>{
-const {id}=req.body
+
+ 
+const id =req.params.id
 const singleSession= await interviewServices.getSessionById(id)
  sendResponse(res, {
       success: true,

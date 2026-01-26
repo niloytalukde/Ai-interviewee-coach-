@@ -1,6 +1,8 @@
 import { Router } from "express";
 import authRouter from "../modules/Auth/auth.routes";
 import interviewRoutes from "../modules/interviewPath/interview.routes";
+import sortOutRouter from "../modules/SortoutCv/sortout.routes";
+import analyzerRouter from "../modules/analyzeCv/analyzecv.routes";
 
 const router = Router();
 
@@ -13,7 +15,14 @@ const moduleRoutes = [
     path: "/interview",
     route: interviewRoutes,
   },
-  
+   {
+    path: "/sort-out",
+    route: sortOutRouter,
+  },
+  {
+    path: "/analyze",
+    route: analyzerRouter,
+  },
 
 ];
 
